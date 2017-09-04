@@ -1,4 +1,4 @@
-package org.springframework.samples.async.chat;
+package org.springframework.samples.async.move;
 
 import java.io.Serializable;
 

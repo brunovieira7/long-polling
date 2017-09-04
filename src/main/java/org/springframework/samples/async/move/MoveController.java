@@ -1,4 +1,4 @@
-package org.springframework.samples.async.chat;
+package org.springframework.samples.async.move;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,38 +17,37 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.async.DeferredResult;
 
 @Controller
-@RequestMapping("/mvc/chat")
-public class ChatController {
+public class MoveController {
 
-	private final ChatRepository chatRepository;
+	private final MoveRepository moveRepository;
 
-	private final Map<DeferredResult<List<MoveMsg>>, Integer> chatRequests =
+	private final Map<DeferredResult<List<MoveMsg>>, Integer> moveRequests =
 			new ConcurrentHashMap<DeferredResult<List<MoveMsg>>, Integer>();
 
 
 	private List<String> players = new ArrayList<String>();
 	
 	@Autowired
-	public ChatController(ChatRepository chatRepository) {
-		this.chatRepository = chatRepository;
+	public MoveController(MoveRepository moveRepository) {
+		this.moveRepository = moveRepository;
 	}
 
-	@RequestMapping(method=RequestMethod.GET)
+	@RequestMapping(value="/move", method=RequestMethod.GET)
 	@ResponseBody
-	public DeferredResult<List<MoveMsg>> getMessages(@RequestParam int messageIndex) {
-		System.out.println("==========message index: " +messageIndex );
+	public DeferredResult<List<MoveMsg>> getMovements(@RequestParam int messageIndex) {
+		//System.out.println("==========message index: " +messageIndex );
 
 		final DeferredResult<List<MoveMsg>> deferredResult = new DeferredResult<List<MoveMsg>>(null, Collections.emptyList());
-		this.chatRequests.put(deferredResult, messageIndex);
+		this.moveRequests.put(deferredResult, messageIndex);
 
 		deferredResult.onCompletion(new Runnable() {
 			@Override
 			public void run() {
-				chatRequests.remove(deferredResult);
+				moveRequests.remove(deferredResult);
 			}
 		});
 
-		List<MoveMsg> messages = this.chatRepository.getMessages(messageIndex);
+		List<MoveMsg> messages = this.moveRepository.getMoves(messageIndex);
 		if (!messages.isEmpty()) {
 			deferredResult.setResult(messages);
 		}
@@ -56,21 +55,21 @@ public class ChatController {
 		return deferredResult;
 	}
 
-	@RequestMapping(method=RequestMethod.POST)
+	@RequestMapping(value="/move", method=RequestMethod.POST)
 	@ResponseBody
-	public void postMessage(@RequestBody MoveMsg moveMsg)  {
+	public void postMovement(@RequestBody MoveMsg moveMsg)  {
 		System.out.println("msg: "+moveMsg);
 		
 /*		ObjectMapper mapper = new ObjectMapper();
 		MoveMsg movemsg = mapper.readValue(message, MoveMsg.class);*/
 		
-		this.chatRepository.addMessage(moveMsg);
+		this.moveRepository.addMove(moveMsg);
 
 		// Update all chat requests as part of the POST request
 		// See Redis branch for a more sophisticated, non-blocking approach
 
-		for (Entry<DeferredResult<List<MoveMsg>>, Integer> entry : this.chatRequests.entrySet()) {
-			List<MoveMsg> messages = this.chatRepository.getMessages(entry.getValue());
+		for (Entry<DeferredResult<List<MoveMsg>>, Integer> entry : this.moveRequests.entrySet()) {
+			List<MoveMsg> messages = this.moveRepository.getMoves(entry.getValue());
 			entry.getKey().setResult(messages);
 		}
 	}

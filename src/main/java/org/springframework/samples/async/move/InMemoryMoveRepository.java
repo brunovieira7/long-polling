@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.async.chat;
+package org.springframework.samples.async.move;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,20 +24,20 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
 @Repository
-public class InMemoryChatRepository implements ChatRepository {
+public class InMemoryMoveRepository implements MoveRepository {
 
-	private final List<MoveMsg> messages = new CopyOnWriteArrayList<MoveMsg>();
+	private final List<MoveMsg> moves = new CopyOnWriteArrayList<MoveMsg>();
 
-	public List<MoveMsg> getMessages(int index) {
-		if (this.messages.isEmpty()) {
+	public List<MoveMsg> getMoves(int index) {
+		if (this.moves.isEmpty()) {
 			return Collections.<MoveMsg> emptyList();
 		}
-		Assert.isTrue((index >= 0) && (index <= this.messages.size()), "Invalid message index");
-		return this.messages.subList(index, this.messages.size());
+		Assert.isTrue((index >= 0) && (index <= this.moves.size()), "Invalid move index");
+		return this.moves.subList(index, this.moves.size());
 	}
 
-	public void addMessage(MoveMsg message) {
-		this.messages.add(message);
+	public void addMove(MoveMsg message) {
+		this.moves.add(message);
 	}
 
 }

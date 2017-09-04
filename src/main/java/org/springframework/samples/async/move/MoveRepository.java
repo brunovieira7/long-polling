@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package org.springframework.samples.async.chat;
+package org.springframework.samples.async.move;
 
 import java.util.List;
 
-public interface ChatRepository {
+public interface MoveRepository {
 
-	List<MoveMsg> getMessages(int messageIndex);
+	List<MoveMsg> getMoves(int messageIndex);
 
-	void addMessage(MoveMsg message);
+	void addMove(MoveMsg message);
 
 }
