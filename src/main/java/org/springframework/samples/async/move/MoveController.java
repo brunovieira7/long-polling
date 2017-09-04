@@ -19,68 +19,75 @@ import org.springframework.web.context.request.async.DeferredResult;
 @Controller
 public class MoveController {
 
-	private final MoveRepository moveRepository;
+    private final MoveRepository moveRepository;
 
-	private final Map<DeferredResult<List<MoveMsg>>, Integer> moveRequests =
-			new ConcurrentHashMap<DeferredResult<List<MoveMsg>>, Integer>();
+    private Map<DeferredResult<List<MoveMsg>>, Integer> moveRequests = new ConcurrentHashMap<DeferredResult<List<MoveMsg>>, Integer>();
 
+    private List<String> players = new ArrayList<String>();
 
-	private List<String> players = new ArrayList<String>();
-	
-	@Autowired
-	public MoveController(MoveRepository moveRepository) {
-		this.moveRepository = moveRepository;
-	}
+    @Autowired
+    public MoveController(MoveRepository moveRepository) {
+        this.moveRepository = moveRepository;
+    }
 
-	@RequestMapping(value="/move", method=RequestMethod.GET)
-	@ResponseBody
-	public DeferredResult<List<MoveMsg>> getMovements(@RequestParam int messageIndex) {
-		//System.out.println("==========message index: " +messageIndex );
+    @RequestMapping(value = "/move", method = RequestMethod.GET)
+    @ResponseBody
+    public DeferredResult<List<MoveMsg>> getMovements(@RequestParam int moveIndex) {
+        // System.out.println("==========message index: " +messageIndex );
 
-		final DeferredResult<List<MoveMsg>> deferredResult = new DeferredResult<List<MoveMsg>>(null, Collections.emptyList());
-		this.moveRequests.put(deferredResult, messageIndex);
+        final DeferredResult<List<MoveMsg>> deferredResult = new DeferredResult<List<MoveMsg>>(null, Collections.emptyList());
+        this.moveRequests.put(deferredResult, moveIndex);
 
-		deferredResult.onCompletion(new Runnable() {
-			@Override
-			public void run() {
-				moveRequests.remove(deferredResult);
-			}
-		});
+        deferredResult.onCompletion(new Runnable() {
+            @Override
+            public void run() {
+                moveRequests.remove(deferredResult);
+            }
+        });
 
-		List<MoveMsg> messages = this.moveRepository.getMoves(messageIndex);
-		if (!messages.isEmpty()) {
-			deferredResult.setResult(messages);
-		}
+        List<MoveMsg> messages = this.moveRepository.getMoves(moveIndex);
+        if (!messages.isEmpty()) {
+            deferredResult.setResult(messages);
+        }
 
-		return deferredResult;
-	}
+        return deferredResult;
+    }
 
-	@RequestMapping(value="/move", method=RequestMethod.POST)
-	@ResponseBody
-	public void postMovement(@RequestBody MoveMsg moveMsg)  {
-		System.out.println("msg: "+moveMsg);
-		
-/*		ObjectMapper mapper = new ObjectMapper();
-		MoveMsg movemsg = mapper.readValue(message, MoveMsg.class);*/
-		
-		this.moveRepository.addMove(moveMsg);
+    @RequestMapping(value = "/move", method = RequestMethod.POST)
+    @ResponseBody
+    public void postMovement(@RequestBody MoveMsg moveMsg) {
+        System.out.println("moving to: " + moveMsg);
 
-		// Update all chat requests as part of the POST request
-		// See Redis branch for a more sophisticated, non-blocking approach
+        /*
+         * ObjectMapper mapper = new ObjectMapper(); MoveMsg movemsg =
+         * mapper.readValue(message, MoveMsg.class);
+         */
+        if (!this.moveRepository.addMove(moveMsg)) {
+            return;
+        }
 
-		for (Entry<DeferredResult<List<MoveMsg>>, Integer> entry : this.moveRequests.entrySet()) {
-			List<MoveMsg> messages = this.moveRepository.getMoves(entry.getValue());
-			entry.getKey().setResult(messages);
-		}
-	}
-	
-	@RequestMapping(value="/player", method=RequestMethod.GET)
-	@ResponseBody
-	public MoveMsg registerPlayer()  {
-		String player = "p" + (players.size() + 1);
-		players.add(player);
-		
-		return new MoveMsg(player, -7, -1);
-	}
+        // Update all chat requests as part of the POST request
+        // See Redis branch for a more sophisticated, non-blocking approach
+
+        for (Entry<DeferredResult<List<MoveMsg>>, Integer> entry : this.moveRequests.entrySet()) {
+            List<MoveMsg> messages = this.moveRepository.getMoves(entry.getValue());
+            entry.getKey().setResult(messages);
+        }
+    }
+
+    @RequestMapping(value = "/player", method = RequestMethod.GET)
+    @ResponseBody
+    public MoveMsg registerPlayer() {
+        String player = "p" + (players.size() + 1);
+        players.add(player);
+
+        return new MoveMsg(player, -7, -1);
+    }
+
+    @RequestMapping(value = "/clear", method = RequestMethod.GET)
+    @ResponseBody
+    public void clear() {
+        this.moveRepository.clear();
+    }
 
 }

@@ -26,7 +26,9 @@ import org.springframework.util.Assert;
 @Repository
 public class InMemoryMoveRepository implements MoveRepository {
 
-	private final List<MoveMsg> moves = new CopyOnWriteArrayList<MoveMsg>();
+	private List<MoveMsg> moves = new CopyOnWriteArrayList<MoveMsg>();
+	
+	private Board board = new Board();
 
 	public List<MoveMsg> getMoves(int index) {
 		if (this.moves.isEmpty()) {
@@ -36,8 +38,17 @@ public class InMemoryMoveRepository implements MoveRepository {
 		return this.moves.subList(index, this.moves.size());
 	}
 
-	public void addMove(MoveMsg message) {
-		this.moves.add(message);
+	public boolean addMove(MoveMsg msg) {
+	    if (board.canMove(msg)) {
+	        this.moves.add(msg);
+	        return true;
+	    }
+	    return false;
+	}
+	
+	public void clear() {
+	    board = new Board();
+	    moves = new CopyOnWriteArrayList<MoveMsg>();
 	}
 
 }

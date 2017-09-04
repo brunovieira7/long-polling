@@ -22,6 +22,8 @@ public interface MoveRepository {
 
 	List<MoveMsg> getMoves(int messageIndex);
 
-	void addMove(MoveMsg message);
+	boolean addMove(MoveMsg message);
+	
+	public void clear();
 
 }
