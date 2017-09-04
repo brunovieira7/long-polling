@@ -12,7 +12,7 @@ public class Board {
     private Map<String, MoveMsg> players = new HashMap<>();
     
     public boolean canMove(MoveMsg msg) {
-        if (!isOutOfBounds(msg))
+        if (isOutOfBounds(msg))
             return false;
         
         boolean canMove = true;
