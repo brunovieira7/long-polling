@@ -29,20 +29,20 @@ import java.util.List;
 import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.samples.async.move.MoveController;
-import org.springframework.samples.async.move.MoveRepository;
+import org.springframework.samples.async.move.ActionController;
+import org.springframework.samples.async.move.MessageRepository;
 import org.springframework.test.web.servlet.MockMvc;
 
 public class ChatControllerTests {
 
 	private MockMvc mockMvc;
 
-	private MoveRepository chatRepository;
+	private MessageRepository chatRepository;
 
 	@Before
 	public void setup() {
-		this.chatRepository = EasyMock.createMock(MoveRepository.class);
-		this.mockMvc = standaloneSetup(new MoveController(this.chatRepository)).build();
+		this.chatRepository = EasyMock.createMock(MessageRepository.class);
+		this.mockMvc = standaloneSetup(new ActionController(this.chatRepository)).build();
 	}
 
 /*

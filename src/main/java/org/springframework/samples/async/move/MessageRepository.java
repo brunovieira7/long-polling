@@ -18,12 +18,14 @@ package org.springframework.samples.async.move;
 
 import java.util.List;
 
-public interface MoveRepository {
+public interface MessageRepository {
 
-	List<MoveMsg> getMoves(int messageIndex);
+	List<ActionMsg> getMessages(int messageIndex);
 
-	boolean addMove(MoveMsg message);
+	boolean addMessage(ActionMsg message);
 	
 	public void clear();
+	
+	public ActionMsg registerPlayer(String prefix);
 
 }

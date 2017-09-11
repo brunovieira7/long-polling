@@ -1,17 +1,19 @@
 package org.springframework.samples.async.move;
 
-public class MoveMsg {
+public class ActionMsg {
     private String player;
+    private String action;
     private float x;
     private float y;
 
-    public MoveMsg(String player, float x, float y) {
+    public ActionMsg(String player, String action, float x, float y) {
         this.player = player;
+        this.action = action;
         this.x = x;
         this.y = y;
     }
 
-    public MoveMsg() {
+    public ActionMsg() {
 
     }
 
@@ -39,15 +41,23 @@ public class MoveMsg {
         this.y = y;
     }
 
-    @Override
-    public String toString() {
-        return "MoveMsg [player=" + player + ", x=" + x + ", y=" + y + "]";
-    }
-
-    public boolean samePlace(MoveMsg msg) {
+    public boolean samePlace(ActionMsg msg) {
         if (msg.getX() == x && msg.getY() == y)
             return true;
 
         return false;
     }
+
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
+
+	@Override
+	public String toString() {
+		return "ActionMsg [player=" + player + ", action=" + action + ", x=" + x + ", y=" + y + "]";
+	}
 }

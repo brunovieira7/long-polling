@@ -17,38 +17,64 @@
 package org.springframework.samples.async.move;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
 @Repository
-public class InMemoryMoveRepository implements MoveRepository {
+public class InMemoryRepository implements MessageRepository {
 
-	private List<MoveMsg> moves = new CopyOnWriteArrayList<MoveMsg>();
+	private List<ActionMsg> moves = new CopyOnWriteArrayList<ActionMsg>();
 	
 	private Board board = new Board();
+	
+	private Map<String, PlayerInfo> playerInfo = new HashMap<>();
 
-	public List<MoveMsg> getMoves(int index) {
+	public List<ActionMsg> getMessages(int index) {
 		if (this.moves.isEmpty()) {
-			return Collections.<MoveMsg> emptyList();
+			return Collections.<ActionMsg> emptyList();
 		}
 		Assert.isTrue((index >= 0) && (index <= this.moves.size()), "Invalid move index");
 		return this.moves.subList(index, this.moves.size());
 	}
 
-	public boolean addMove(MoveMsg msg) {
+	public boolean addMessage(ActionMsg msg) {
+		if (msg.getAction().equals("kunai")) {
+			this.moves.add(msg);
+			String enemyId = board.enemyGotHit(msg);
+			if (enemyId != null) {
+				playerInfo.get(enemyId).dropHp(10);
+				this.moves.add(new ActionMsg(enemyId, "hp", -10, 0));
+			}
+		}
+		
+		if (!msg.getAction().equals("move")) {
+			this.moves.add(msg);
+			return true;
+		}
+		
 	    if (board.canMove(msg)) {
 	        this.moves.add(msg);
 	        return true;
 	    }
+	    
 	    return false;
 	}
 	
 	public void clear() {
 	    board = new Board();
-	    moves = new CopyOnWriteArrayList<MoveMsg>();
+	    moves = new CopyOnWriteArrayList<ActionMsg>();
 	}
 
+	@Override
+	public ActionMsg registerPlayer(String prefix) {
+		ActionMsg msg = board.registerPlayer(prefix);
+		playerInfo.put(msg.getPlayer(), new PlayerInfo(msg.getPlayer(), 100));
+		
+		return msg;
+	}
 }
