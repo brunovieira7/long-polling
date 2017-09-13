@@ -3,10 +3,12 @@ package org.springframework.samples.async.move;
 public class PlayerInfo {
 	public String player;
 	public int hp;
+	public int maxhp;
 	
 	public PlayerInfo(String player, int hp) {
 		this.player = player;
 		this.hp = hp;
+		this.maxhp = hp;
 	}
 
 	public String getPlayer() {
@@ -27,5 +29,9 @@ public class PlayerInfo {
 	
 	public void dropHp(int amount) {
 		this.hp -= amount;
+	}
+	
+	public float getHpPercentage() {
+		return (float)hp /(float)maxhp;
 	}
 }

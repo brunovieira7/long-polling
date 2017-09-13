@@ -27,5 +27,7 @@ public interface MessageRepository {
 	public void clear();
 	
 	public ActionMsg registerPlayer(String prefix);
+	
+	public List<ActionMsg> getPlayers();
 
 }

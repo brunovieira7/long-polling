@@ -1,7 +1,10 @@
 package org.springframework.samples.async.move;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Board {
     private float xmax = 8f;
@@ -13,15 +16,51 @@ public class Board {
     
     private int index = 1;
     
-    public String enemyGotHit(ActionMsg msg) {
+    public ActionMsg enemyGotHit(ActionMsg msg) {
     	ActionMsg pPos = players.get(msg.getPlayer());
     	ActionMsg enemy = players.values().stream().filter(x -> x.getPlayer().startsWith("e") && x.getY() == pPos.getY()).findFirst().orElse(null);
     	
     	// projectile from left to right and enemy is on the right
-    	if (msg.getX() > 0 && (pPos.getX() < enemy.getX())) {
-    		return enemy.getPlayer();
+    	if (enemy != null && msg.getX() > 0 && (pPos.getX() < enemy.getX())) {
+    		return enemy;
     	}
     	return null;
+    }
+    
+    public List<ActionMsg> getPlayers() {
+    	return players.values().stream().filter(x -> x.getPlayer().startsWith("p")).collect(Collectors.toList());
+    }
+    
+    public List<ActionMsg> playersGotHit(ActionMsg msg, int radius) {
+    	
+    	List<ActionMsg> playersHit = players.values().stream()
+    			.filter(x -> x.getPlayer().startsWith("p") && playerOnSpell(x, msg, radius))
+    			.collect(Collectors.toList());
+
+    	return playersHit;
+    }
+    
+    public List<ActionMsg> getNeighbours(ActionMsg msg, int radius) {
+    	List<ActionMsg> msgs = new ArrayList<>();
+    	
+    	//System.out.println("ORIGIN: " + msg);
+    	
+    	float yStep = ((float)radius/(float)2);
+    	for (float x = -radius; x <= radius; x++) {
+    		for (float y = -yStep; y <= yStep; y+=0.5) {
+    			ActionMsg tmp = new ActionMsg(msg.getPlayer(), msg.getAction(), msg.getX() + x, msg.getY() + y);
+    			
+    			//System.out.println("PLC: " + tmp);
+    			if (!isOutOfBounds(tmp))
+    				msgs.add(tmp);
+    		}
+    	}
+    	
+    	return msgs;
+    }
+    
+    public boolean playerOnSpell(ActionMsg player, ActionMsg msg, int radius) {
+    	return getNeighbours(msg, radius).stream().filter(x -> x.samePlace(player)).findFirst().isPresent();
     }
     
     public boolean canMove(ActionMsg msg) {

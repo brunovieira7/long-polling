@@ -44,12 +44,33 @@ public class InMemoryRepository implements MessageRepository {
 
 	public boolean addMessage(ActionMsg msg) {
 		if (msg.getAction().equals("kunai")) {
-			this.moves.add(msg);
-			String enemyId = board.enemyGotHit(msg);
-			if (enemyId != null) {
-				playerInfo.get(enemyId).dropHp(10);
-				this.moves.add(new ActionMsg(enemyId, "hp", -10, 0));
+			
+			ActionMsg enemy = board.enemyGotHit(msg);
+			if (enemy != null) {
+				playerInfo.get(enemy.getPlayer()).dropHp(1);
+				this.moves.add(new ActionMsg(enemy.getPlayer(), "hp", playerInfo.get(enemy.getPlayer()).getHpPercentage(), 0));
+				msg.setX(enemy.getX());
 			}
+			else {
+				if (msg.getX() > 0) msg.setX(10);
+				else msg.setX(-10);
+			}
+			
+			this.moves.add(msg);
+			return true;
+		}
+		
+		if (msg.getAction().equals("snake")) {
+			List<ActionMsg> players = board.playersGotHit(msg, 1);
+			if (players != null && !players.isEmpty()) {
+				players.stream().forEach(x -> {
+					playerInfo.get(x.getPlayer()).dropHp(10);
+					this.moves.add(new ActionMsg(x.getPlayer(), "hp", playerInfo.get(x.getPlayer()).getHpPercentage(), 0));
+				});
+			}
+			
+			this.moves.add(msg);
+			return true;
 		}
 		
 		if (!msg.getAction().equals("move")) {
@@ -68,6 +89,7 @@ public class InMemoryRepository implements MessageRepository {
 	public void clear() {
 	    board = new Board();
 	    moves = new CopyOnWriteArrayList<ActionMsg>();
+	    playerInfo = new HashMap<>();
 	}
 
 	@Override
@@ -76,5 +98,11 @@ public class InMemoryRepository implements MessageRepository {
 		playerInfo.put(msg.getPlayer(), new PlayerInfo(msg.getPlayer(), 100));
 		
 		return msg;
+	}
+
+	@Override
+	public List<ActionMsg> getPlayers() {
+		// TODO Auto-generated method stub
+		return board.getPlayers();
 	}
 }

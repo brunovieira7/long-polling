@@ -1,9 +1,11 @@
 package org.springframework.samples.async.move;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +87,20 @@ public class ActionController {
         this.messageRepository.clear();
     }
 
+    public List<ActionMsg> getPlayers() {
+    	return messageRepository.getPlayers();
+    }
+    
+    public ActionMsg getRandomMove() {
+    	List<ActionMsg> rnd = new ArrayList<>();
+    	rnd.add(new ActionMsg("","",0f, -0.5f));
+    	rnd.add(new ActionMsg("","",0f, 0.5f));
+    	rnd.add(new ActionMsg("","",1f, 0f));
+    	rnd.add(new ActionMsg("","",-1f, 0f));
+    	
+    	return rnd.get(new Random().nextInt(rnd.size()));
+    }
+    
 	public void enemyStuff() {
 		Thread thread = new Thread(new Runnable() {
 
@@ -93,13 +109,26 @@ public class ActionController {
 		    	
 		    	//while(true) {
 		    		try {
-						Thread.sleep(3000);
+						Thread.sleep(1000);
 						messageRepository.registerPlayer("e");
 						postMovement(new ActionMsg("e1","move",7,-1.5f));
-						Thread.sleep(3000);
-						postMovement(new ActionMsg("xx","square:3",4,-1.5f));
-						Thread.sleep(3000);
-						postMovement(new ActionMsg("s1","snake",4,-1.5f));
+						Thread.sleep(1000);
+						
+						while(true) {
+							int moveRnd = new Random().nextInt(4);
+							for (int x = 0; x < moveRnd; x++) {
+								ActionMsg rnd = getRandomMove();
+								postMovement(new ActionMsg("e1","move", rnd.getX(), rnd.getY()));
+								Thread.sleep(1500);
+							}
+							
+							ActionMsg player = getPlayers().get(new Random().nextInt(getPlayers().size()));
+							
+							postMovement(new ActionMsg("xx","square:3",player.getX(),player.getY()));
+							Thread.sleep(2100);
+							postMovement(new ActionMsg("s1","snake",player.getX(),player.getY()));
+							Thread.sleep(1500);
+						}
 						
 						
 					} catch (InterruptedException e) {
