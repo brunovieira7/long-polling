@@ -77,7 +77,6 @@ public class ActionController {
     @RequestMapping(value = "/player", method = RequestMethod.GET)
     @ResponseBody
     public ActionMsg registerPlayer() {
-    	enemyStuff();
         return this.messageRepository.registerPlayer("p");
     }
 
@@ -85,6 +84,12 @@ public class ActionController {
     @ResponseBody
     public void clear() {
         this.messageRepository.clear();
+    }
+    
+    @RequestMapping(value = "/enemy", method = RequestMethod.GET)
+    @ResponseBody
+    public void enemy() {
+        enemyStuff();
     }
 
     public List<ActionMsg> getPlayers() {
@@ -107,7 +112,7 @@ public class ActionController {
 		    @Override
 		    public void run() {
 		    	
-		    	//while(true) {
+		    	while(true) {
 		    		try {
 						Thread.sleep(1000);
 						messageRepository.registerPlayer("e");
@@ -135,7 +140,7 @@ public class ActionController {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-		    	//}
+		    	 }
 		    }
 		            
 		});
